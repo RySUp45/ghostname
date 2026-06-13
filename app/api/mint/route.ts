@@ -1,4 +1,4 @@
-import { NextResponse } from 'next/server'
+import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
 import { generatePrivateKey, privateKeyToAccount } from 'viem/accounts'
 
@@ -7,8 +7,11 @@ const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
 )
 
-export async function POST() {
+export async function POST(req: NextRequest) {
   try {
+    const body = await req.json().catch(() => ({}))
+    const owner = body.owner ?? '0xDEMO'
+
     const privateKey = generatePrivateKey()
     const account = privateKeyToAccount(privateKey)
     const burnerAddress = account.address
@@ -19,7 +22,7 @@ export async function POST() {
 
     const { error } = await supabase.from('subnames').insert({
       label,
-      owner: '0xDEMO',
+      owner,
       resolved_address: burnerAddress,
       expires_at,
     })
@@ -27,8 +30,7 @@ export async function POST() {
     if (error) throw new Error(error.message)
 
     return NextResponse.json({ label, ghostname, resolved_address: burnerAddress, private_key: privateKey, expires_at })
-  } 
-    catch (e: any) {
+  } catch (e: any) {
     return NextResponse.json({ error: e.message }, { status: 500 })
   }
 }
