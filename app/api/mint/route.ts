@@ -26,8 +26,9 @@ export async function POST() {
 
     if (error) throw new Error(error.message)
 
-    return NextResponse.json({ label, ghostname, resolved_address: burnerAddress, expires_at })
-  } catch (e: any) {
+    return NextResponse.json({ label, ghostname, resolved_address: burnerAddress, private_key: privateKey, expires_at })
+  } 
+    catch (e: any) {
     return NextResponse.json({ error: e.message }, { status: 500 })
   }
 }
